@@ -67,7 +67,7 @@ Future plans:
 * [Single File](#single-file)
 * [Multiple Files](#multiple-files)
 * [SQLite 3](#sqlite-3)
-* [Backup](#backup)
+* [Backups](#backups)
 
 **5. [Deeplinks](#5-deeplinks)**
 
@@ -456,7 +456,7 @@ SELECT * FROM sometable;
 .quit
 ```
 
-### Backup
+### Backups
 
 Get your iOS device UDID:
 
@@ -802,7 +802,7 @@ Production app (i.e. build) should never be debuggable.
 * [developer.apple.com/apple-pay/sandbox-testing](https://developer.apple.com/apple-pay/sandbox-testing) (test debit/credit cards for Apple Pay)
 * [youtube.com/\@iDeviceMovies](https://www.youtube.com/\@iDeviceMovies) (useful videos about jailbreaking, etc.)
 * [altstore.io](https://altstore.io) \([fix for installation issue](https://github.com/altstoreio/AltStore/issues/156#issuecomment-717133644)\) (alt. app store | no jailbreak needed)
-* [imobie.com/anytrans](https://www.imobie.com/anytrans) (iOS backup)
+* [imobie.com/anytrans](https://www.imobie.com/anytrans) (iOS backups)
 
 ### iMazing
 
