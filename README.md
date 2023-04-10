@@ -364,7 +364,7 @@ If you are interested in my tool, visit [github.com/ivan-sincek/property-lister]
 
 Inspect memory dumps, binaries, files inside [an unpacked IPA](#pull-a-decrypted-ipa), or any other files.
 
-After you finish testing, don't forget to download app specific directories using [SCP](#downloadupload-files-and-directories) and inspect all the files inside.
+There will be some false positive results since the regular expressions are not perfect. I prefer to use `rabin2` over `strings` because it can read Unicode characters.
 
 **Don't forget to extract Base64 strings from property list files as you might find sensitive data.**
 
