@@ -149,14 +149,16 @@ systemctl start docker
 
 apt-get -y install ideviceinstaller libimobiledevice-utils libplist-utils radare2 sqlite3 sqlitebrowser xmlstarlet
 
-pip3 install frida-tools objection
+pip3 install frida-tools objection property-lister
 ```
 
-Make sure that Frida and Objection are always up to date:
+Make sure that Frida, Objection, and Property Lister are always up to date:
 
 ```fundamental
-pip3 install frida-tools objection --upgrade
+pip3 install frida-tools objection property-lister --upgrade
 ```
+
+If you are interested in my tool, check [github.com/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
 
 ### Mobile Security Framework (MobSF)
 
@@ -206,13 +208,13 @@ Install an IPA using [3uTools](https://www.3u.com) desktop app. Jailbreak is req
 
 ---
 
-On your Kali Linux, start a local web server, and put an IPA in the web root directory (i.e. `somedir`):
+On your Kali Linux, start a local web server, and put an IPA in the web root directory (e.g. `somedir`):
 
 ```fundamental
 python3 -m http.server 9000 --directory somedir
 ```
 
-On your iOS device, download the IPA, long press on it, choose `Share`, and install it using [ReProvision Reborn](https://havoc.app/package/rpr) iOS app.
+On your iOS device, download the IPA, long press on it, choose "Share", and install it using [ReProvision Reborn](https://havoc.app/package/rpr) iOS app.
 
 <p align="center"><img src="https://github.com/ivan-sincek/ios-penetration-testing-cheat-sheet/blob/main/img/ReProvision_Reborn_sideloading.jpg" alt="Sideloading an IPA using ReProvision Reborn" height="600em"></p>
 
@@ -260,13 +262,19 @@ git clone https://github.com/AloneMonkey/frida-ios-dump && cd frida-ios-dump && 
 python3 dump.py -o decrypted.ipa -P alpine -p 22 -H 192.168.1.10 com.someapp.dev
 ```
 
-If you want to pull an encrypted IPA from your iOS device, see section [8. Repackage an IPA](#8-repackage-an-ipa).
+If you want to pull an encrypted IPA from your iOS device, see section [8. Repackage an IPA](#8-repackage-an-ipa) and [iMazing](#imazing).
+
+To unpack e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred), run:
+
+```fundamental
+unzip decrypted.ipa
+```
+
+You should now see the `Payload` directory.
 
 ### Binary
 
-Unpack e.g. `someapp.ipa`, and then navigate to `/Payload/someapp.app/` directory. There, you will find the binary which have the same name and no file type (i.e. `someapp`).
-
-Search the binary for specific keywords:
+Navigate to `/Payload/someapp.app/` directory. There, you will find a binary which have the same name and no file type (i.e. `someapp`). Search the binary for specific keywords:
 
 ```bash
 rabin2 -zzzqq someapp | grep -Pi 'keyword'
@@ -274,9 +282,13 @@ rabin2 -zzzqq someapp | grep -Pi 'keyword'
 rabin2 -zzzqq someapp | grep -Pi 'hasOnlySecureContent|javaScriptEnabled|UIWebView|WKWebView'
 ```
 
-WebViews can sometimes be really subtle, e.g. they could be hidden as a link to terms of agreement, privacy policy, about the software, etc.
+WebViews can sometimes be very subtle, e.g. they could be hidden as a link to terms of agreement, privacy policy, about the software, referral, etc.
 
 Search the binary for endpoints, deeplinks, sensitive data, comments, etc. For more examples, see section [4. Inspect Files](#4-inspect-files).
+
+Search the binary for weak hash algorithms, insecure random functions, insecure memory allocation functions, etc. For the best results, use [MobSF](#mobile-security-framework-mobsf).
+
+---
 
 Download the latest [AppInfoScanner](https://github.com/kelvinBen/AppInfoScanner/releases), install the requirements, then, extract and resolve endpoints from the binary:
 
@@ -286,13 +298,9 @@ pip3 install -r requirements.txt
 python3 app.py ios -i someapp
 ```
 
-Search the binary for weak hash algorithms, insecure random functions, insecure memory allocation functions, etc. For the best results, use [MobSF](#mobile-security-framework-mobsf).
-
 ### Info.plist
 
-Unpack e.g. `someapp.ipa`, and then navigate to `/Payload/someapp.app/` directory. There, you will find the property list file with the name `Info.plist`.
-
-Extract URL schemes from the property list file:
+Navigate to `/Payload/someapp.app/` directory. There, you will find a property list file with the name `Info.plist`. Extract URL schemes from the property list file:
 
 ```bash
 xmlstarlet sel -t -v 'plist/dict/array/dict[key = "CFBundleURLSchemes"]/array/string' -nl Info.plist | sort -uf | tee url_schemes.txt
@@ -308,7 +316,7 @@ Search for files and directories from the global root directory:
 find / -iname '*keyword*'
 ```
 
-Search for files and directories in app specific directories (run `env` in [Objection](#7-objection)):
+Search for files and directories in the app specific directories (run `env` in [Objection](#7-objection)):
 
 ```bash
 cd /private/var/containers/Bundle/Application/XXX...XXX/
@@ -317,6 +325,8 @@ cd /var/mobile/Containers/Data/Application/YYY...YYY/
 ```
 
 If you want to download a whole directory from your iOS device, see section [Download/Upload Files and Directories](#downloadupload-files-and-directories).
+
+I preffer downloading the app specific directories, and then doing the [file inspection](#4-inspect-files) on my Kali Linux.
 
 Search for files and directories from the current directory:
 
@@ -351,20 +361,16 @@ Search for sensitive data in property list files inside Cache.db unencrypted dat
 ```fundamental
 scp root@192.168.1.10:/var/mobile/Containers/Data/Application/YYY...YYY/Library/Caches/com.someapp.dev/Cache.db ./
 
-pip3 install property-lister
-
 property-lister -db Cache.db -o plists
 ```
 
 Cache.db is unencrypted and backed up by default, and as such, should not contain any sensitive data after user logs out - it should be cleard by calling [removeAllCachedResponses\(\)](https://developer.apple.com/documentation/foundation/urlcache/1417802-removeallcachedresponses).
 
-If you are interested in my tool, check [github.com/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
-
 ## 4. Inspect Files
 
-Inspect memory dumps, binaries, files inside [an unpacked IPA](#pull-a-decrypted-ipa) or app specific directories, or any other files.
+Inspect memory dumps, binaries, files inside [an unpacked IPA](#pull-a-decrypted-ipa), files inside the app specific directories, or any other files.
 
-After you finish testing \[and logout\], don't forget to download app specific directories using [scp](#downloadupload-files-and-directories) and inspect all the files inside. Inspect what is new, and what still persists after logout.
+After you finish testing \[and logout\], don't forget to download the app specific directories using [scp](#downloadupload-files-and-directories) and inspect all the files inside. Inspect what is new and what still persists after logout.
 
 **Don't forget to extract Base64 strings from property list files as you might find sensitive data.**
 
@@ -472,10 +478,6 @@ idevicebackup2 backup --full --source someudid --udid someudid ./
 
 ## 5. Deeplinks
 
-Sometimes, deeplinks can bypass biometrics.
-
----
-
 Create an HTML template to manually test deeplinks:
 
 ```bash
@@ -492,7 +494,7 @@ scheme="somescheme"; for string in $(cat urls.txt | grep -Poi "${scheme}\:\/\/.+
 python3 -m http.server 9000 --directory ios_deeplinks
 ```
 
-`url_schemes.txt` can be fetched from [Info.plist](#infoplist), while, `urls.txt` can be fetched from [4. Inspect Files](#4-inspect-files).
+`url_schemes.txt` can be found in [Info.plist](#infoplist), while, `urls.txt` can be found in [4. Inspect Files](#4-inspect-files).
 
 ---
 
@@ -505,6 +507,10 @@ frida -U -no-pause --codeshare ivan-sincek/ios-url-scheme-fuzzing -f com.someapp
 ```
 
 Check the source code for more instructions. You can also paste the whole source code directly into Frida and call the methods as you prefer.
+
+---
+
+Sometimes, deeplinks can bypass biometrics.
 
 ## 6. Frida
 
@@ -619,7 +625,7 @@ ios nsurlcredentialstorage dump
 ios nsuserdefaults get
 ```
 
-Secrets such as app's PIN or password should not be stored as plain-text in the keychain; instead, they should be hashed as an additional level of protection.
+Sensitive data such as app's PIN, password, etc. should not be stored as a plain-text in the keychain; instead, they should be hashed as an additional level of protection.
 
 Dump app's memory to a file:
 
@@ -761,7 +767,7 @@ wget http://www.newosxbook.com/tools/filemon.tgz && tar zxvf filemon.tgz && chmo
 
 Always look for created or cached files, images/screenshots, etc. Use `nano` to edit files directly on your iOS device.
 
-Sensitive files such as know your customer (KYC) and similar, should not persists in app specific directories on the user device after the file upload.
+Sensitive files such as know your customer (KYC) and similar, should not persists in the app specific directories on the user device after the file upload.
 
 Images/screenshots path:
 
