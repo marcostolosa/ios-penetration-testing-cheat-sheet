@@ -71,7 +71,7 @@ Future plans:
 **5. [Property Lister](#5-property-lister)**
 
 * [Cache.db](#cachedb)
-* [Find All / Dump All](#find-alldump-all)
+* [Find All / Dump All](#find-all--dump-all)
 
 **6. [Deeplinks](#6-deeplinks)**
 
