@@ -124,7 +124,7 @@ Install required tools on your iOS device using Cydia:
 
 [SSH](#ssh-to-your-ios-device) to your iOS device, then, download and install [SSL Kill Switch 2](https://github.com/nabla-c0d3/ssl-kill-switch2/releases):
 
-```bash
+```fundamental
 wget https://github.com/nabla-c0d3/ssl-kill-switch2/releases/download/0.14/com.nablac0d3.sslkillswitch2_0.14.deb
 
 dpkg -i com.nablac0d3.sslkillswitch2_0.14.deb
@@ -208,7 +208,7 @@ Install an IPA using [3uTools](https://www.3u.com) desktop app. Jailbreak is req
 
 On your Kali Linux, start a local web server, and put an IPA in the web root directory (i.e. `somedir`):
 
-```bash
+```fundamental
 python3 -m http.server 9000 --directory somedir
 ```
 
@@ -280,7 +280,7 @@ Search the binary for endpoints, deeplinks, sensitive data, comments, etc. For m
 
 Download the latest [AppInfoScanner](https://github.com/kelvinBen/AppInfoScanner/releases), install the requirements, then, extract and resolve endpoints from the binary:
 
-```bash
+```fundamental
 pip3 install -r requirements.txt
 
 python3 app.py ios -i someapp
@@ -348,7 +348,7 @@ By default, NSURLSession class stores data such as HTTP requests and responses i
 
 Search for sensitive data in property list files inside Cache.db unencrypted database file:
 
-```bash
+```fundamental
 scp root@192.168.1.10:/var/mobile/Containers/Data/Application/YYY...YYY/Library/Caches/com.someapp.dev/Cache.db ./
 
 pip3 install property-lister
@@ -498,7 +498,7 @@ python3 -m http.server 9000 --directory ios_deeplinks
 
 Fuzz deeplinks using [ios-url-scheme-fuzzing](https://codeshare.frida.re/@ivan-sincek/ios-url-scheme-fuzzing) script with [Frida](#6-frida):
 
-```bash
+```fundamental
 frida -U -no-pause -l ios-url-scheme-fuzzing.js -f com.someapp.dev
 
 frida -U -no-pause --codeshare ivan-sincek/ios-url-scheme-fuzzing -f com.someapp.dev
@@ -631,7 +631,7 @@ Dump app's memory after e.g. 10 minutes of inactivity, then, check if sensitive 
 
 Search app's memory directly:
 
-```fundamental
+```bash
 memory search 'somestring' --string
 ```
 
