@@ -69,28 +69,30 @@ Future plans:
 * [SQLite 3](#sqlite-3)
 * [Backups](#backups)
 
-**5. [Deeplinks](#5-deeplinks)**
+**5. [Property Lister](#5-property-lister)**
 
-**6. [Frida](#6-frida)**
+**6. [Deeplinks](#6-deeplinks)**
+
+**7. [Frida](#7-frida)**
 
 * [Frida Scripts](#frida-scripts)
 
-**7. [Objection](#7-objection)**
+**8. [Objection](#8-objection)**
 
 * [Bypasses](#bypasses)
 
-**8. [Repackage an IPA](#8-repackage-an-ipa)**
+**9. [Repackage an IPA](#9-repackage-an-ipa)**
 
-**9. [Miscellaneous](#9-miscellaneous)**
+**10. [Miscellaneous](#10-miscellaneous)**
 
 * [Monitor the System Log](#monitor-the-system-log)
 * [Monitor File Changes](#monitor-file-changes)
 * [Dump the Pasteboard](#dump-the-pasteboard)
 * [Get the Provisioning Profile](#get-the-provisioning-profile)
 
-**10. [Tips and Security Best Practices](#10-tips-and-security-best-practices)**
+**11. [Tips and Security Best Practices](#11-tips-and-security-best-practices)**
 
-**11. [Useful Websites and Tools](#11-useful-websites-and-tools)**
+**12. [Useful Websites and Tools](#12-useful-websites-and-tools)**
 
 * [iMazing](#imazing)
 
@@ -158,7 +160,7 @@ Make sure that Frida, Objection, and Property Lister are always up to date:
 pip3 install frida-tools objection property-lister --upgrade
 ```
 
-If you are interested in my tool, check [github.com/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
+If you are interested in my tool, check [/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
 
 ### Mobile Security Framework (MobSF)
 
@@ -262,7 +264,7 @@ git clone https://github.com/AloneMonkey/frida-ios-dump && cd frida-ios-dump && 
 python3 dump.py -o decrypted.ipa -P alpine -p 22 -H 192.168.1.10 com.someapp.dev
 ```
 
-If you want to pull an encrypted IPA from your iOS device, see section [8. Repackage an IPA](#8-repackage-an-ipa) and [iMazing](#imazing).
+If you want to pull an encrypted IPA from your iOS device, see section [8. Repackage an IPA](#9-repackage-an-ipa) and [iMazing](#imazing).
 
 To unpack e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred), run:
 
@@ -316,7 +318,7 @@ Search for files and directories from the global root directory:
 find / -iname '*keyword*'
 ```
 
-Search for files and directories in the app specific directories (run `env` in [Objection](#7-objection)):
+Search for files and directories in the app specific directories (run `env` in [Objection](#8-objection)):
 
 ```bash
 cd /private/var/containers/Bundle/Application/XXX...XXX/
@@ -476,7 +478,11 @@ Create a backup:
 idevicebackup2 backup --full --source someudid --udid someudid ./
 ```
 
-## 5. Deeplinks
+## 5. Property Lister
+
+To do.
+
+## 6. Deeplinks
 
 Create an HTML template to manually test deeplinks:
 
@@ -494,11 +500,11 @@ scheme="somescheme"; for string in $(cat urls.txt | grep -Poi "${scheme}\:\/\/.+
 python3 -m http.server 9000 --directory ios_deeplinks
 ```
 
-`url_schemes.txt` can be found in [Info.plist](#infoplist), while, `urls.txt` can be found in [4. Inspect Files](#4-inspect-files).
+For `url_schemes.txt` see section [Info.plist](#infoplist), and for `urls.txt` see section [4. Inspect Files](#4-inspect-files).
 
 ---
 
-Fuzz deeplinks using [ios-url-scheme-fuzzing](https://codeshare.frida.re/@ivan-sincek/ios-url-scheme-fuzzing) script with [Frida](#6-frida):
+Fuzz deeplinks using [ios-url-scheme-fuzzing](https://codeshare.frida.re/@ivan-sincek/ios-url-scheme-fuzzing) script with [Frida](#7-frida):
 
 ```fundamental
 frida -U -no-pause -l ios-url-scheme-fuzzing.js -f com.someapp.dev
@@ -512,7 +518,7 @@ Check the source code for more instructions. You can also paste the whole source
 
 Sometimes, deeplinks can bypass biometrics.
 
-## 6. Frida
+## 7. Frida
 
 Useful resources:
 
@@ -575,7 +581,7 @@ frida -U -no-pause -l ios-hook-classes-methods.js -f com.someapp.dev
 frida -U -no-pause --codeshare ivan-sincek/ios-hook-classes-methods -f com.someapp.dev
 ```
 
-## 7. Objection
+## 8. Objection
 
 Useful resources:
 
@@ -587,7 +593,7 @@ Run:
 objection -g com.someapp.dev explore
 ```
 
-Run a [Frida](#6-frida) script in Objection:
+Run a [Frida](#7-frida) script in Objection:
 
 ```fundamental
 import somescript.js
@@ -715,7 +721,7 @@ objection -g com.someapp.dev explore --startup-command 'ios ui biometrics_bypass
 
 Also, you can import [Frida](#frida-scripts) script.
 
-## 8. Repackage an IPA
+## 9. Repackage an IPA
 
 [SSH](#ssh-to-your-ios-device) to your iOS device and run the following commands.
 
@@ -745,7 +751,7 @@ scp root@192.168.1.10:/private/var/containers/Bundle/Application/XXX...XXX/repac
 
 If you want to pull a decrypted IPA from your iOS device, see section [Pull a Decrypted IPA](#pull-a-decrypted-ipa).
 
-## 9. Miscellaneous
+## 10. Miscellaneous
 
 ### Monitor the System Log
 
@@ -789,7 +795,7 @@ cycript -p 1337
 
 Press `CTRL + D` to exit.
 
-You can also monitor the pasteboard in [Objection](#7-objection).
+You can also monitor the pasteboard in [Objection](#8-objection).
 
 ### Get the Provisioning Profile
 
@@ -799,7 +805,7 @@ scp root@192.168.1.10:/private/var/containers/Bundle/Application/XXX...XXX/*.app
 openssl smime -inform der -verify -noverify -in embedded.mobileprovision
 ```
 
-## 10. Tips and Security Best Practices
+## 11. Tips and Security Best Practices
 
 Bypass any keyboard restriction by copying and pasting data into an input field.
 
@@ -815,7 +821,7 @@ App should warn a user when taking a screenshot of sensitive data, as well as, t
 
 Production app (i.e. build) should never be debuggable.
 
-## 11. Useful Websites and Tools
+## 12. Useful Websites and Tools
 
 * [zxing.org/w/decode.jspx](https://zxing.org/w/decode.jspx) (decode QR codes)
 * [developer.apple.com/account](https://developer.apple.com/account) (code signing certificates, etc.)
