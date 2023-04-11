@@ -460,7 +460,7 @@ SELECT * FROM sometable;
 .quit
 ```
 
-You can automate this task with [Property Lister](#5-property-lister).
+You can automate such tasks with [Property Lister](#5-property-lister).
 
 ### Backups
 
@@ -494,7 +494,9 @@ Cache.db is unencrypted and backed up by default, and as such, should not contai
 
 ### Find All / Dump All
 
-Dump all the databases, and extract and convert all the property list files:
+Unpack e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred).
+
+Dump all the databases, and extract and convert to a readable format all the property list files:
 
 ```fundamental
 property-lister -db Payload -o ipa_db
@@ -502,7 +504,7 @@ property-lister -db Payload -o ipa_db
 property-lister -pl Payload -o ipa_pl
 ```
 
-Do so for the unpacked e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred) and for [the app specific directories](#3-search-for-files-and-directories).
+Repeat the same for [the app specific directories](#3-search-for-files-and-directories).
 
 ## 6. Deeplinks
 
