@@ -2,7 +2,7 @@
 
 This is more of a checklist for myself. May contain useful tips and tricks.
 
-Everything was tested on Kali Linux v2022.2 (64-bit) and iPhone 7 with iOS v13.4.1 and unc0ver jailbreak v8.0.2.
+Everything was tested on Kali Linux v2023.1 (64-bit) and iPhone 7 with iOS v13.4.1 and unc0ver jailbreak v8.0.2.
 
 Check [3uTools](https://www.3u.com) if you want to jailbreak your iOS device. I have no [liability](https://github.com/ivan-sincek/ios-penetration-testing-cheat-sheet/blob/main/LICENSE) over your actions.
 
@@ -33,7 +33,7 @@ Future plans:
 * install Burp Proxy and ZAP certificates,
 * test widgets, push notifications, app extensions, and Firebase,
 * disassemble, reverse engineer, and resign IPA,
-* restore a backup,
+* restore from a backup,
 * future downgrades using SHSH BLOBS.
 
 ## Table of Contents
@@ -206,7 +206,7 @@ Install an IPA using [3uTools](https://www.3u.com) desktop app. Jailbreak is req
 
 ---
 
-On your Kali Linux, start a local web server, and put an IPA in the web root directory:
+On your Kali Linux, start a local web server, and put an IPA in the web root directory (i.e. `somedir`):
 
 ```bash
 python3 -m http.server 9000 --directory somedir
@@ -269,12 +269,12 @@ Unpack e.g. `someapp.ipa`, and then navigate to `/Payload/someapp.app/` director
 Search the binary for specific keywords:
 
 ```bash
-rabin2 -zzzq someapp | grep -Pi 'keyword'
+rabin2 -zzzqq someapp | grep -Pi 'keyword'
 
-rabin2 -zzzq someapp | grep -Pi 'hasOnlySecureContent|javaScriptEnabled|UIWebView|WKWebView'
+rabin2 -zzzqq someapp | grep -Pi 'hasOnlySecureContent|javaScriptEnabled|UIWebView|WKWebView'
 ```
 
-Web views can sometimes be really subtle, e.g. they could be hidden as a link to terms of agreement, privacy policy, about the software, etc.
+WebViews can sometimes be really subtle, e.g. they could be hidden as a link to terms of agreement, privacy policy, about the software, etc.
 
 Search the binary for endpoints, deeplinks, sensitive data, comments, etc. For more examples, see section [4. Inspect Files](#4-inspect-files).
 
@@ -298,7 +298,7 @@ Extract URL schemes from the property list file:
 xmlstarlet sel -t -v 'plist/dict/array/dict[key = "CFBundleURLSchemes"]/array/string' -nl Info.plist | sort -uf | tee url_schemes.txt
 ```
 
-Search the property list file for endpoints, sensitive data, etc. For more examples, see section [4. Inspect Files](#4-inspect-files).
+Search the property list file for endpoints, sensitive data \[in Base64 encoding\], etc. For more examples, see section [4. Inspect Files](#4-inspect-files).
 
 ## 3. Search for Files and Directories
 
@@ -358,13 +358,13 @@ property-lister -db Cache.db -o plists
 
 Cache.db is unencrypted and backed up by default, and as such, should not contain any sensitive data after user logs out - it should be cleard by calling [removeAllCachedResponses\(\)](https://developer.apple.com/documentation/foundation/urlcache/1417802-removeallcachedresponses).
 
-If you are interested in my tool, visit [github.com/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
+If you are interested in my tool, check [github.com/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
 
 ## 4. Inspect Files
 
-Inspect memory dumps, binaries, files inside [an unpacked IPA](#pull-a-decrypted-ipa), or any other files.
+Inspect memory dumps, binaries, files inside [an unpacked IPA](#pull-a-decrypted-ipa) or app specific directories, or any other files.
 
-There will be some false positive results since the regular expressions are not perfect. I prefer to use `rabin2` over `strings` because it can read Unicode characters.
+After you finish testing \[and logout\], don't forget to download app specific directories using [scp](#downloadupload-files-and-directories) and inspect all the files inside. Inspect what is new, and what still persists after logout.
 
 **Don't forget to extract Base64 strings from property list files as you might find sensitive data.**
 
@@ -472,13 +472,29 @@ idevicebackup2 backup --full --source someudid --udid someudid ./
 
 ## 5. Deeplinks
 
+Sometimes, deeplinks can bypass biometrics.
+
+---
+
 Create an HTML template to manually test deeplinks:
 
 ```bash
-scheme="somescheme"; for string in $(cat urls.txt | grep -Poi "${scheme}\:\/\/.+"); do echo -n "<a href='${string}'>${string}</a>\n<br><br>\n"; done | tee "${scheme}_deeplinks.html"
+mkdir -p ios_deeplinks
 
-python3 -m http.server 9000 --directory somedir
+# multiple URL schemes
+
+for scheme in $(cat url_schemes.txt); do for url in $(cat urls.txt | grep -Poi "${scheme}\:\/\/.+"); do if [[ ! -z $url ]]; then echo -n "<a href='${url}'>${url}</a>\n<br><br>\n" | tee "ios_deeplinks/${scheme}_deeplinks.html"; fi; done; done
+
+# single URL scheme
+
+scheme="somescheme"; for string in $(cat urls.txt | grep -Poi "${scheme}\:\/\/.+"); do echo -n "<a href='${string}'>${string}</a>\n<br><br>\n"; done | tee "ios_deeplinks/${scheme}_deeplinks.html"
+
+python3 -m http.server 9000 --directory ios_deeplinks
 ```
+
+`url_schemes.txt` can be fetched from [Info.plist](#infoplist), while, `urls.txt` can be fetched from [4. Inspect Files](#4-inspect-files).
+
+---
 
 Fuzz deeplinks using [ios-url-scheme-fuzzing](https://codeshare.frida.re/@ivan-sincek/ios-url-scheme-fuzzing) script with [Frida](#6-frida):
 
@@ -489,8 +505,6 @@ frida -U -no-pause --codeshare ivan-sincek/ios-url-scheme-fuzzing -f com.someapp
 ```
 
 Check the source code for more instructions. You can also paste the whole source code directly into Frida and call the methods as you prefer.
-
-Sometimes, deeplinks can be used to bypass biometrics.
 
 ## 6. Frida
 
