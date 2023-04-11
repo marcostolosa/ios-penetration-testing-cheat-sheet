@@ -60,7 +60,6 @@ Future plans:
 **3. [Search for Files and Directories](#3-search-for-files-and-directories)**
 
 * [NSUserDefaults](#nsuserdefaults)
-* [Cache.db](#cachedb)
 
 **4. [Inspect Files](#4-inspect-files)**
 
@@ -70,6 +69,9 @@ Future plans:
 * [Backups](#backups)
 
 **5. [Property Lister](#5-property-lister)**
+
+* [Cache.db](#cachedb)
+* [Find All / Dump All](#find-alldump-all)
 
 **6. [Deeplinks](#6-deeplinks)**
 
@@ -154,13 +156,13 @@ apt-get -y install ideviceinstaller libimobiledevice-utils libplist-utils radare
 pip3 install frida-tools objection property-lister
 ```
 
-Make sure that Frida, Objection, and Property Lister are always up to date:
+If you are interested in my tool, check [/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
+
+Make sure that Frida and Objection are always up to date:
 
 ```fundamental
 pip3 install frida-tools objection property-lister --upgrade
 ```
-
-If you are interested in my tool, check [/ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
 
 ### Mobile Security Framework (MobSF)
 
@@ -213,10 +215,12 @@ Install an IPA using [3uTools](https://www.3u.com) desktop app. Jailbreak is req
 On your Kali Linux, start a local web server, and put an IPA in the web root directory (e.g. `somedir`):
 
 ```fundamental
+mkdir somedir
+
 python3 -m http.server 9000 --directory somedir
 ```
 
-On your iOS device, download the IPA, long press on it, choose "Share", and install it using [ReProvision Reborn](https://havoc.app/package/rpr) iOS app.
+On your iOS device, download the IPA, long press on it, choose "Share", and install it using [ReProvision Reborn](https://havoc.app/package/rpr) iOS app. Jailbreak is required.
 
 <p align="center"><img src="https://github.com/ivan-sincek/ios-penetration-testing-cheat-sheet/blob/main/img/ReProvision_Reborn_sideloading.jpg" alt="Sideloading an IPA using ReProvision Reborn" height="600em"></p>
 
@@ -266,17 +270,19 @@ python3 dump.py -o decrypted.ipa -P alpine -p 22 -H 192.168.1.10 com.someapp.dev
 
 If you want to pull an encrypted IPA from your iOS device, see section [8. Repackage an IPA](#9-repackage-an-ipa) and [iMazing](#imazing).
 
-To unpack e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred), run:
+To unpack e.g. `someapp.ipa` or `decrypted.ipa` (preferred), run:
 
 ```fundamental
 unzip decrypted.ipa
 ```
 
-You should now see the `Payload` directory.
+You should now see the unpacked `Payload` directory.
 
 ### Binary
 
-Navigate to `/Payload/someapp.app/` directory. There, you will find a binary which have the same name and no file type (i.e. `someapp`). Search the binary for specific keywords:
+Navigate to `/Payload/someapp.app/` directory. There, you will find a binary which have the same name and no file type (i.e. `someapp`).
+
+Search the binary for specific keywords:
 
 ```bash
 rabin2 -zzzqq someapp | grep -Pi 'keyword'
@@ -292,7 +298,7 @@ Search the binary for weak hash algorithms, insecure random functions, insecure 
 
 ---
 
-Download the latest [AppInfoScanner](https://github.com/kelvinBen/AppInfoScanner/releases), install the requirements, then, extract and resolve endpoints from the binary:
+Download the latest [AppInfoScanner](https://github.com/kelvinBen/AppInfoScanner/releases), install the requirements, and then extract and resolve endpoints from the binary:
 
 ```fundamental
 pip3 install -r requirements.txt
@@ -302,7 +308,9 @@ python3 app.py ios -i someapp
 
 ### Info.plist
 
-Navigate to `/Payload/someapp.app/` directory. There, you will find a property list file with the name `Info.plist`. Extract URL schemes from the property list file:
+Navigate to `/Payload/someapp.app/` directory. There, you will find a property list file with the name `Info.plist`.
+
+Extract URL schemes from the property list file:
 
 ```bash
 xmlstarlet sel -t -v 'plist/dict/array/dict[key = "CFBundleURLSchemes"]/array/string' -nl Info.plist | sort -uf | tee url_schemes.txt
@@ -312,7 +320,7 @@ Search the property list file for endpoints, sensitive data \[in Base64 encoding
 
 ## 3. Search for Files and Directories
 
-Search for files and directories from the global root directory:
+Search for files and directories from the root directory:
 
 ```bash
 find / -iname '*keyword*'
@@ -354,25 +362,11 @@ scp root@192.168.1.10:/var/mobile/Containers/Data/Application/YYY...YYY/Library/
 plistutil -f xml -i com.someapp.dev.plist
 ```
 
-### Cache.db
-
-By default, NSURLSession class stores data such as HTTP requests and responses in Cache.db unencrypted database file.
-
-Search for sensitive data in property list files inside Cache.db unencrypted database file:
-
-```fundamental
-scp root@192.168.1.10:/var/mobile/Containers/Data/Application/YYY...YYY/Library/Caches/com.someapp.dev/Cache.db ./
-
-property-lister -db Cache.db -o plists
-```
-
-Cache.db is unencrypted and backed up by default, and as such, should not contain any sensitive data after user logs out - it should be cleard by calling [removeAllCachedResponses\(\)](https://developer.apple.com/documentation/foundation/urlcache/1417802-removeallcachedresponses).
-
 ## 4. Inspect Files
 
 Inspect memory dumps, binaries, files inside [an unpacked IPA](#pull-a-decrypted-ipa), files inside the app specific directories, or any other files.
 
-After you finish testing \[and logout\], don't forget to download the app specific directories using [scp](#downloadupload-files-and-directories) and inspect all the files inside. Inspect what is new and what still persists after logout.
+After you finish testing \[and logout\], don't forget to [download](#downloadupload-files-and-directories) the app specific directories and inspect all the files inside. Inspect what is new and what still persists after logout.
 
 **Don't forget to extract Base64 strings from property list files as you might find sensitive data.**
 
@@ -442,13 +436,15 @@ for string in $(cat base64.txt); do res=$(echo "${string}" | base64 -d 2>/dev/nu
 
 ### SQLite 3
 
-Use [SCP](#downloadupload-files-and-directories) to download database files. Once downloaded, open them with [DB Browser for SQLite](https://sqlitebrowser.org).
+Use [SCP](#downloadupload-files-and-directories) to download database files, and then open them using [DB Browser for SQLite](https://sqlitebrowser.org).
 
 To inspect the content, navigate to `Browse Data` tab, expand `Table` dropdown menu, and select the desired table.
 
 <p align="center"><img src="https://github.com/ivan-sincek/ios-penetration-testing-cheat-sheet/blob/main/img/sqlite.png" alt="SQLite"></p>
 
 <p align="center">Figure 3 - DB Browser for SQLite</p>
+
+---
 
 To inspect/edit database files on your iOS device, use [SQLite 3](#cydia-sources-and-tools); [SSH](#ssh-to-your-ios-device) to your iOS device and run the following commands:
 
@@ -463,6 +459,8 @@ SELECT * FROM sometable;
 
 .quit
 ```
+
+You can automate this task with [Property Lister](#5-property-lister).
 
 ### Backups
 
@@ -480,14 +478,38 @@ idevicebackup2 backup --full --source someudid --udid someudid ./
 
 ## 5. Property Lister
 
-To do.
+### Cache.db
+
+By default, NSURLSession class stores data such as HTTP requests and responses in Cache.db unencrypted database file.
+
+Search for sensitive data in property list files inside Cache.db unencrypted database file:
+
+```fundamental
+scp root@192.168.1.10:/var/mobile/Containers/Data/Application/YYY...YYY/Library/Caches/com.someapp.dev/Cache.db ./
+
+property-lister -db Cache.db -o plists
+```
+
+Cache.db is unencrypted and backed up by default, and as such, should not contain any sensitive data after user logs out - it should be cleard by calling [removeAllCachedResponses\(\)](https://developer.apple.com/documentation/foundation/urlcache/1417802-removeallcachedresponses).
+
+### Find All / Dump All
+
+Dump all the databases, and extract and convert all the property list files:
+
+```fundamental
+property-lister -db Payload -o ipa_db
+
+property-lister -pl Payload -o ipa_pl
+```
+
+Do so for the unpacked e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred) and for [the app specific directories](#3-search-for-files-and-directories).
 
 ## 6. Deeplinks
 
 Create an HTML template to manually test deeplinks:
 
 ```bash
-mkdir -p ios_deeplinks
+mkdir ios_deeplinks
 
 # multiple URL schemes
 
@@ -639,7 +661,7 @@ Dump app's memory to a file:
 memory dump all mem.dmp
 ```
 
-Dump app's memory after e.g. 10 minutes of inactivity, then, check if sensitive data is still in the memory. See section [4. Inspect Files](#4-inspect-files).
+Dump app's memory after e.g. 10 minutes of inactivity, then, check if sensitive data is still in the memory, see section [4. Inspect Files](#4-inspect-files).
 
 Search app's memory directly:
 
@@ -809,7 +831,7 @@ openssl smime -inform der -verify -noverify -in embedded.mobileprovision
 
 Bypass any keyboard restriction by copying and pasting data into an input field.
 
-Access tokens should be short lived and invalidated once the user logs out.
+Access tokens should be short lived, and if possible, invalidated on logout.
 
 Don't forget to test widgets, push notifications, app extensions, and Firebase.
 
