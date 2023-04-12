@@ -851,7 +851,7 @@ Production app (i.e. build) should never be debuggable.
 * [developer.apple.com/account](https://developer.apple.com/account) (code signing certificates, etc.)
 * [developer.apple.com/apple-pay/sandbox-testing](https://developer.apple.com/apple-pay/sandbox-testing) (test debit/credit cards for Apple Pay)
 * [youtube.com/\@iDeviceMovies](https://www.youtube.com/\@iDeviceMovies) (useful videos about jailbreaking, etc.)
-* [altstore.io](https://altstore.io) \([fix for installation issue](https://github.com/altstoreio/AltStore/issues/156#issuecomment-717133644)\) (alt. app store | no jailbreak needed)
+* [altstore.io](https://altstore.io) \([fix for installation issue](https://github.com/altstoreio/AltStore/issues/156#issuecomment-717133644)\) (alt. app store | jailbreak is not required)
 * [imobie.com/anytrans](https://www.imobie.com/anytrans) (iOS backups)
 
 ### iMazing
