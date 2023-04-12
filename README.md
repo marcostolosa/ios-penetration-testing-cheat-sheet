@@ -496,7 +496,7 @@ Cache.db is unencrypted and backed up by default, and as such, should not contai
 
 Unpack e.g. `someapp.ipa` or [decrypted.ipa](#pull-a-decrypted-ipa) (preferred).
 
-Dump all the databases, and extract and convert all the property list files:
+Dump all the databases, and extract and convert all the property list files inside an IPA:
 
 ```fundamental
 property-lister -db Payload -o results_db
