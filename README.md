@@ -490,7 +490,7 @@ scp root@192.168.1.10:/var/mobile/Containers/Data/Application/YYY...YYY/Library/
 property-lister -db Cache.db -o plists
 ```
 
-Cache.db is unencrypted and backed up by default, and as such, should not contain any sensitive data after user logs out - it should be cleard by calling [removeAllCachedResponses\(\)](https://developer.apple.com/documentation/foundation/urlcache/1417802-removeallcachedresponses).
+Cache.db is unencrypted and backed up by default, and as such, should not contain any sensitive data after user logs out - it should be cleared by calling [removeAllCachedResponses\(\)](https://developer.apple.com/documentation/foundation/urlcache/1417802-removeallcachedresponses).
 
 ### Find All / Dump All
 
