@@ -211,7 +211,7 @@ Run:
 docker run -it --rm --name mobsf -p 8000:8000 opensecurity/mobile-security-framework-mobsf
 ```
 
-Navigate to `http://localhost:8000` using your preferred web browser.
+Navigate to `http://localhost:8000` using your preferred web browser. Username and password are `mobsf:mobsf`.
 
 Uninstall:
 
