@@ -551,6 +551,8 @@ property-lister -pl Payload -o results_pl
 
 Repeat the same for [the app specific directories](#3-search-for-files-and-directories).
 
+More about my other project at [ivan-sincek/property-lister](https://github.com/ivan-sincek/property-lister).
+
 ### Nuclei
 
 Download mobile Nuclei templates:
